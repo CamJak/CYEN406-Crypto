@@ -1,5 +1,6 @@
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
+from Crypto.Util.Padding import pad, unpad
 from base64 import b64encode, b64decode
 import json
 import sys
@@ -12,21 +13,21 @@ def encryptFile(keyFile, targetFile):
     
     hashObj = SHA256.new(key)
     
-    # read plaintext to encrypt
+    # read f to encrypt
     with open(targetFile, 'rb') as f:
-        plainText = f.read()
+        plaintext = f.read()
     
     # new AES object
-    cipher = AES.new(hashObj.digest(), AES.MODE_EAX)
-    ciphertext, tag = cipher.encrypt_and_digest(plainText)
+    cipher = AES.new(hashObj.digest(), AES.MODE_CBC)
+    ciphertext_bytes = cipher.encrypt(pad(plaintext, AES.block_size))
 
-    # keys and values for .json file to store encrypted data
-    json_keys = ['nonce', 'ciphertext', 'tag']
-    json_values = [b64encode(x).decode('utf-8') for x in (cipher.nonce, ciphertext, tag)]
-
-    # package json dictionary
-    encryption_json = json.dumps(dict(zip(json_keys, json_values)))
+    # iv and ciphertext
+    iv = b64encode(cipher.iv).decode('utf-8')
+    ciphertext = b64encode(ciphertext_bytes).decode('utf-8')
     
+    # keys and values for .json file to store encrypted data
+    encryption_json = json.dumps({'iv':iv, 'ciphertext': ciphertext})
+
     # write output file 
     with open("encrypted_msg.json", "w") as outfile:
         outfile.write(encryption_json)
@@ -43,24 +44,27 @@ def decryptFile(keyFile, targetFile):
 
     # try except for weird json formatting
     try:
+        # load json file
         with open(targetFile) as f:
             js = json.load(f)
         
         #unpack and decode encrypted .json
-        json_keys = ['nonce', 'ciphertext', 'tag']
-        jvals = {k: b64decode(js[k]) for k in json_keys}
+        iv = b64decode(js['iv'])
+        ciphertext = b64decode(js['ciphertext'])
 
         # new AES object
-        cipher = AES.new(hashObj.digest(), AES.MODE_EAX, nonce = jvals['nonce'])
-        plainText = cipher.decrypt_and_verify(jvals['ciphertext'], jvals['tag'])
+        cipher = AES.new(hashObj.digest(), AES.MODE_CBC, iv)
+        plaintext = unpad(cipher.decrypt(ciphertext), AES.block_size)
 
         # writes output file 
+       
         with open("decrypted_msg.txt", 'w') as outfile:
-            outfile.write(plainText.decode('utf-8'))
+            outfile.write(plaintext.decode('utf-8'))
 
         print("Decryption complete: 'decrypted_msg.txt' created.")
+    
     except (ValueError, KeyError):
-            print("Decryption Error")
+        print("Decryption Error")
             
 # MAIN
 if __name__ == "__main__":
