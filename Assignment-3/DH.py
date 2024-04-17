@@ -1,9 +1,11 @@
+import binascii
 import random
 import hashlib
 
 # read in prime
 with open('prime', 'r') as f:
-    p = int(f.read())
+    prime_str = f.read().strip()
+    p = int(prime_str.replace(':', ''), 16)
 
 # set generator
 g = 2
@@ -16,7 +18,7 @@ username = "alice"
 password = "password123"
 
 # create the private key
-private_key = hashlib.sha256(f"{username}:{password}:{salt}")
+private_key = hashlib.sha256(f"{username}:{password}:{salt}".encode())
 
 # create the public key
 public_key = pow(g, private_key, p)
