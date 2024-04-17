@@ -3,7 +3,8 @@ import hashlib
 
 # read in prime
 with open('prime', 'r') as f:
-    p = int(f.read())
+    prime_str = f.read().strip()
+    p = int(prime_str.replace(':', ''), 16)
 
 # set generator
 g = 2
@@ -16,7 +17,7 @@ username = "alice"
 password = "password123"
 
 # create the private key
-private_key = hashlib.sha256(f"{username}:{password}:{salt}")
+private_key = int(hashlib.sha256(f"{username}:{password}:{salt}".encode()).hexdigest(), 16)
 
 # create the public key
 public_key = pow(g, private_key, p)
@@ -32,4 +33,6 @@ other_public_key = 0
 shared_key = pow(other_public_key, private_key, p)
 
 # hash the shared key and output
-shared_key = hashlib.sha256(shared_key)
+shared_key_bytes = shared_key.to_bytes((shared_key.bit_length() + 7) // 8, 'big')
+shared_key_hash = hashlib.sha256(shared_key_bytes).hexdigest()
+shared_key = hashlib.sha256(shared_key_bytes).digest()
