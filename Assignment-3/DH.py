@@ -36,3 +36,4 @@ shared_key = pow(other_public_key, private_key, p)
 shared_key_bytes = shared_key.to_bytes((shared_key.bit_length() + 7) // 8, 'big')
 shared_key_hash = hashlib.sha256(shared_key_bytes).hexdigest()
 shared_key = hashlib.sha256(shared_key_bytes).digest()
+
