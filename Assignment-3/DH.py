@@ -16,24 +16,38 @@ salt = random.getrandbits(64)
 username = "alice"
 password = "password123"
 
-# create the private key
+### PRIVATE KEY ###
+# hash the username, password, and salt to get the private key
 private_key = int(hashlib.sha256(f"{username}:{password}:{salt}".encode()).hexdigest(), 16)
 
-# create the public key
-public_key = pow(g, private_key, p)
+# output private key to file as hex (format: xx:xx:xx:xx:xx:xx:xx:xx)
+with open('private_key', 'w') as f:
+    private_key_str = ':'.join(f"{private_key}"[i:i+2] for i in range(0, len(f"{private_key}"), 2))
+    f.write(private_key_str)
 
-# output key to file as hex
+
+### PUBLIC KEY ###
+# calculate the public key
+public_key = int(pow(g, private_key, p)) # g^private_key mod p
+
+# output public key to file as hex (format: xx:xx:xx:xx:xx:xx:xx:xx)
 with open('public_key', 'w') as f:
-    f.write(hex(public_key))
+    public_key_str = ':'.join(f"{public_key}"[i:i+2] for i in range(0, len(f"{public_key}"), 2))
+    f.write(public_key_str)
 
-# get other person's public key later
+
+### SYMMETRIC KEY ###
+#TODO: get other person's public key later
 other_public_key = 0
 
-# create the shared key
-shared_key = pow(other_public_key, private_key, p)
+# create the symmetric (shared) key
+symmetric_key = pow(other_public_key, private_key, p) # other_public_key^private_key mod p
 
-# hash the shared key and output
-shared_key_bytes = shared_key.to_bytes((shared_key.bit_length() + 7) // 8, 'big')
-shared_key_hash = hashlib.sha256(shared_key_bytes).hexdigest()
-shared_key = hashlib.sha256(shared_key_bytes).digest()
+# hash the symmetric (shared) key and output
+symmetric_key_bytes = symmetric_key.to_bytes((symmetric_key.bit_length() + 7) // 8, 'big')
+symmetric_key_hash = hashlib.sha256(symmetric_key_bytes).hexdigest()
 
+# output symmetric key to file as hex (format: xx:xx:xx:xx:xx:xx:xx:xx)
+with open('symmetric_key', 'w') as f:
+    symmetric_key_str = ':'.join(symmetric_key_hash[i:i+2] for i in range(0, len(symmetric_key_hash), 2))
+    f.write(symmetric_key_str)
