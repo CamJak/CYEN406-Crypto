@@ -20,7 +20,7 @@ password = str(input("Password: "))
 
 ### PRIVATE KEY ###
 # hash the username, password, and salt to get the private key
-private_key = int(hashlib.sha256(f"{username}:{password}:{salt}".encode()).hexdigest(), 16)
+private_key = hashlib.sha256(f"{username}:{password}:{salt}".encode()).hexdigest()
 
 # output private key to file as hex (format: xx:xx:xx:xx:xx:xx:xx:xx)
 with open('private_key', 'w') as f:
@@ -29,8 +29,8 @@ with open('private_key', 'w') as f:
 
 
 ### PUBLIC KEY ###
-# calculate the public key
-public_key = int(pow(g, private_key, p)) # g^private_key mod p
+# calculate the public key and convert to hex
+public_key = hex(pow(g, int(private_key, 16), p))[2:] # g^private_key mod p
 
 # output public key to file as hex (format: xx:xx:xx:xx:xx:xx:xx:xx)
 with open('public_key', 'w') as f:
@@ -44,11 +44,11 @@ with open('public_key', 'w') as f:
 other_public_key = int(input("Enter the other public key: ").replace(':', ''), 16)
 
 # create the symmetric (shared) key
-symmetric_key = pow(other_public_key, private_key, p) # other_public_key^private_key mod p
+symmetric_key = str(pow(other_public_key, int(private_key, 16), p)).encode() # other_public_key^private_key mod p
 
 # hash the symmetric (shared) key and output
-symmetric_key_bytes = symmetric_key.to_bytes((symmetric_key.bit_length() + 7) // 8, 'big')
-symmetric_key_hash = hashlib.sha256(symmetric_key_bytes).hexdigest()
+#symmetric_key_bytes = symmetric_key.to_bytes((symmetric_key.bit_length() + 7) // 8, 'big')
+symmetric_key_hash = hashlib.sha256(symmetric_key).hexdigest()
 
 # output symmetric key to file as hex (format: xx:xx:xx:xx:xx:xx:xx:xx)
 with open('symmetric_key', 'w') as f:
