@@ -13,8 +13,10 @@ g = 2
 salt = random.getrandbits(64)
 
 # username and password
-username = "alice"
-password = "password123"
+# username = "alice"
+# password = "password123"
+username = str(input("Username: "))
+password = str(input("Password: "))
 
 ### PRIVATE KEY ###
 # hash the username, password, and salt to get the private key
@@ -38,7 +40,8 @@ with open('public_key', 'w') as f:
 
 ### SYMMETRIC KEY ###
 #TODO: get other person's public key later
-other_public_key = 0
+# other_public_key = 0
+other_public_key = int(input("Enter the other public key: ").replace(':', ''), 16)
 
 # create the symmetric (shared) key
 symmetric_key = pow(other_public_key, private_key, p) # other_public_key^private_key mod p
