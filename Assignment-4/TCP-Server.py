@@ -1,7 +1,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
 server_socket = socket(AF_INET, SOCK_STREAM)
-server_socket.bind(('', 12345))
+server_socket.bind(('', 9001))
 server_socket.listen(1)
 print("Server is ready to receive...\n")
 
