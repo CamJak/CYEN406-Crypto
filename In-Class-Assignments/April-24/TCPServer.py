@@ -19,30 +19,31 @@ while(True):
     print(f"HTTP Request:\n{req_decoded}")
     print(f"Host: {gethostbyname(host)}\n")
 
-    #parse request
-    parsed = req_decoded.split()
-    mssg = parsed[0]
-    path = parsed[1]
-    version = parsed[2]
+    # #parse request
+    # parsed = req_decoded.split()
+    # mssg = parsed[0]
+    # path = parsed[1]
+    # version = parsed[2]
 
-    path_parsed = path.split("/")
-    obj = path_parsed[-1]    
-    print(f"Object to be fetched: {obj}")
-    # attempt to open and read the contents of obj if it exists
-    try:
-        obj_cont = open(obj)
-        content = obj_cont.read()
-        print(f"Object content:\n{content}\n")
-        code = 200
-        resp_mssg = "OK"
+    # path_parsed = path.split("/")
+    # obj = path_parsed[-1]    
+    # print(f"Object to be fetched: {obj}")
+    # # attempt to open and read the contents of obj if it exists
+    # try:
+    #     obj_cont = open(obj)
+    #     content = obj_cont.read()
+    #     print(f"Object content:\n{content}\n")
+    #     code = 200
+    #     resp_mssg = "OK"
 
-    except:
-        code = 404
-        resp_mssg = "Not Found"    
+    # except:
+    #     code = 404
+    #     resp_mssg = "Not Found"    
 
-    response = f"{version} {code} {resp_mssg}"
-    if code != 404:
-        response += "\n\n" + str(content)
-    print(f"HTTP response message:\n{response}\n")
+    # response = f"{version} {code} {resp_mssg}"
+    # if code != 404:
+    #     response += "\n\n" + str(content)
+    # print(f"HTTP response message:\n{response}\n")
 
+    response = "received request!"
     socket_cxn.send(response.encode())

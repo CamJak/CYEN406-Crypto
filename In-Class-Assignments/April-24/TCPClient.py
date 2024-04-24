@@ -6,13 +6,16 @@ DEBUG = False
 from socket import *
 from sys import argv
 
-if DEBUG:
-    print(argv[1:])
-# parse arguments
-host_ip = argv[1]
-host_port = argv[2]
-obj = argv[3]
-request = f"GET /{obj} HTTP/1.1"
+# if DEBUG:
+#     print(argv[1:])
+# # parse arguments
+# host_ip = argv[1]
+# host_port = argv[2]
+# obj = argv[3]
+# request = f"GET /{obj} HTTP/1.1"
+host_ip = input("Enter the IP address of the server: ")
+host_port = input("Enter the port number of the server: ")
+request = input("Enter the message: ")
 
 # Establish TCP Connection
 client_socket = socket(AF_INET, SOCK_STREAM)
