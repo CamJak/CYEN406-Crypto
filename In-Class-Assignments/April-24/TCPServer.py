@@ -1,10 +1,7 @@
-# Travis Knippers
-# Assignment 2
-
 from socket import *
 
 server_socket = socket(AF_INET, SOCK_STREAM) # SOCK_STREAM refers to TCP-type connection
-server_socket.bind(('', 12000)) # (IP, Port No.)
+server_socket.bind(('138.47.155.35', 12001)) # (IP, Port No.)
 server_socket.listen(1) # infinitely listen
 print("The server is ready to receive...\n")
 
@@ -16,8 +13,8 @@ while(True):
     
     req_decoded = request_cxn.decode()
 
-    print(f"HTTP Request:\n{req_decoded}")
-    print(f"Host: {gethostbyname(host)}\n")
+    print(f"Message:\n{req_decoded}")
+    #print(f"Host: {gethostbyname(host)}\n")
 
     # #parse request
     # parsed = req_decoded.split()
