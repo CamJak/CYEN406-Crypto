@@ -35,7 +35,6 @@ public_key = hex(pow(g, int(private_key, 16), p))[2:] # g^private_key mod p
 with open('public_key', 'w') as f:
     f.write(public_key)
 
-
 ### SYMMETRIC KEY ###
 #TODO: get other person's public key later
 # other_public_key = 0
