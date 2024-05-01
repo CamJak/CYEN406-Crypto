@@ -1,6 +1,53 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import random
 import hashlib
+from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
+from Crypto.Util.Padding import pad, unpad
+from base64 import b64encode, b64decode
+
+def encryptText(key, plaintext, iv):
+    
+    # read key to use with hashing, key is 'rijndael'
+    byte_key = int(key, 16).to_bytes(32, byteorder='big')
+
+    byte_iv = int(iv, 16).to_bytes(16, byteorder='big')
+    
+    # read f to encrypt
+    byte_plaintext = plaintext.encode()
+    
+    # new AES object
+    cipher = AES.new(byte_key, AES.MODE_CBC, byte_iv)
+
+    ciphertext_bytes = cipher.encrypt(pad(byte_plaintext, AES.block_size))
+
+    # iv and ciphertext
+    ciphertext = b64encode(ciphertext_bytes).decode('utf-8')
+
+    return ciphertext
+
+def decryptText(key, iv, ciphertext):
+    
+    # key for hashing must be same as encryption
+    byte_key = int(key, 16).to_bytes(32, byteorder='big')
+    
+    byte_iv = int(iv, 16).to_bytes(16, byteorder='big')
+
+    decoded_ciphertext = b64decode(ciphertext)
+
+    # new AES object
+    cipher = AES.new(byte_key, AES.MODE_CBC, byte_iv)
+    plaintext = unpad(cipher.decrypt(decoded_ciphertext), AES.block_size)
+
+    plaintext = plaintext.decode()
+
+    return plaintext
+
+########################
+# DH Key Exchange
+########################
+
+DEBUG = False
 
 # read in prime
 with open('prime', 'r') as f:
@@ -106,17 +153,55 @@ while(True):
             if confirm_message.decode() == test_confirm_message:
 
                 # If the confirmation message is correct, send a return message to the client
-                return_message = "Symmetric Key Confirmed..."
+                return_message = "Symmetric Key Confirmed...\nPlease send your AES encrypted message to the server. To close the connection, send 'exit'."
                 connection_socket.send(return_message.encode())
                 print("Symmetric Key Confirmed...")
+                print("Awaiting AES Encrypted Message...")
                 print()
-                print("----------------------------------------")
-                print()
+
+                while(True):
+                        
+                    # Receive the AES encrypted message from the client
+                    encrypted_message = connection_socket.recv(2048).decode()
+                    print(f"Client AES Encrypted Message: {encrypted_message}")
+
+                    # Decrypt the AES encrypted message
+                    decrypted_message = decryptText(symmetric_key_hash, iv_hash, encrypted_message)
+
+                    # Print the decrypted message
+                    print(f"Client Message: {decrypted_message}")
+                    print()
+
+                    # Check if the client wants to close the connection
+                    if decrypted_message == "exit":
+                        print("Closing Connection...")
+                        print()
+
+                        return_message = "Connection Closed..."
+                        connection_socket.send(return_message.encode())
+                        connection_socket.close()
+                        break
+                    
+                    else:
+                        
+                        plaintext = input("Server: ")
+                        print()
+
+                        # Encrypt the message
+                        ciphertext = encryptText(symmetric_key_hash, plaintext, iv_hash)
+
+                        # Send the encrypted message to the client
+                        connection_socket.send(ciphertext.encode())
+
+                        # Wait for the client to send the AES encrypted message
+                        if DEBUG:
+                            print("Waiting for the AES encrypted message from the client...")
+                            print()
             
             else:
 
                 # If the confirmation message is incorrect, send a return message to the client
-                return_message = "Symmetric Key Not Confirmed..."
+                return_message = "Symmetric Key Not Confirmed...\nPlease try again."
                 connection_socket.send(return_message.encode())
                 print("Symmetric Key Not Confirmed...")
                 print()
