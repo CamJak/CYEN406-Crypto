@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Courtesy of NSA-Codebreaker
+# remove labels later
+
+SEC_DRIVE=$1      <---  /dev/sda2
+SEC_MOUNT=$2      <---  /private
+ENC_PARTITION=$3  <---  /opt/part.enc
+ENC_MOUNT=$4      <---  /agent
+
+[ ! -e $ENC_PARTITION ] && { echo "encrypted partition not found"; exit 1; }
+
+mkdir -p $SEC_MOUNT
+mount $SEC_DRIVE $SEC_MOUNT
+NAME=`hostname`
+ID=`cat /private/id.txt`
+
+DATA="${NAME}${ID:0:3}"
+echo "cryptsetup: opening $ENC_PARTITION"
+echo -n $DATA | openssl sha1 | awk '{print $NF}' | cryptsetup open $ENC_PARTITION part
+mkdir -p $ENC_MOUNT
+mount /dev/mapper/part $ENC_MOUNT
