@@ -3,6 +3,7 @@
 # Get Variables
 
 valuefile="./valuefile.dat"
+PASSPHRASE="SuperDuperSecurePassphrase901"
 
 # if we don't have a file, it has been tampered with >:(
 if [ ! -f "$valuefile" ]; then
@@ -10,11 +11,11 @@ if [ ! -f "$valuefile" ]; then
 	exit 1
 
 # otherwise read the value from the file
-# format: MAX_POINTS;POINTS_TOTAL;POINTS_STAGE;STAGE;NUM_STAGES;HINTS_USED
-# TODO: Obfuscate the hell out of this file
+# format: MAX_POINTS-POINTS_TOTAL-POINTS_STAGE-STAGE-NUM_STAGES-HINTS_USED
 else
-    value=$(<"$valuefile")
-	IFS=';' read -r -a values <<< "$value"
+    value_enc=$(<"$valuefile")
+	value=$(echo $value_enc | openssl aes-256-cbc -d -a -pass pass:$PASSPHRASE -pbkdf2)
+	IFS='-' read -r -a values <<< "$value"
 	MAX_POINTS=${values[0]}
 	POINTS_TOTAL=${values[1]}
 	POINTS_STAGE=${values[2]}
@@ -32,7 +33,7 @@ case $STAGE in
 		STAGE_ANSWER="b3e6ad45e549d4850bcaa03e1f926b6f"
 		NUM_HINTS=2
 		HINTS=("We believe that script is being run when the system boots, check for locations that can run files on boot." "Our forensic specialists have narrowed down some possible locations for the script, check /etc/init.d/ and the crontabs.")
-		SUCCESS_MSG="Congratulations! You have found the script used to decrypt the partition! You earned $POINTS_STAGE points for this stage. Proceed to the next stage."
+		SUCCESS_MSG="Congratulations! You have found the script used to decrypt the partition! You earned $POINTS_STAGE points for this stage. Proceed to the next stage.\n\n"
 		NEXT_STAGE_POINTS=20000
 		;;
 	2)
@@ -64,7 +65,7 @@ case $STAGE in
 		STAGE_ANSWER=""
 		NUM_HINTS=0
 		HINTS=()
-		SUCCESS_MSG=""
+		SUCCESS_MSG="Congratulations! You have completed the challenge! You earned $POINTS_STAGE points for this stage. Thank you for participating!\n\n---===] Your final score is $POINTS_TOTAL! [===---\n\n"
 		;;
 esac
 
@@ -75,6 +76,11 @@ help_fun () {
 }
 
 hint_fun () {
+	# quit if the user has already finished the challenge
+	if [ $STAGE -gt $NUM_STAGES ]; then
+		printf "There are no more hints, you finished the challenge!\n"
+		exit 0
+	fi
 	# show previous hints
 	if [ $HINTS_USED -gt 0 ]; then
 		printf "\nPrevious hints for this stage:\n"
@@ -101,18 +107,35 @@ hint_fun () {
 }
 
 status_fun () {
+	# check if the user has already finished the challenge
+	if [ $STAGE -gt $NUM_STAGES ]; then
+		printf "You have completed the challenge! Thank you for participating!\n\n---===] Your final score is $POINTS_TOTAL/$MAX_POINTS! [===---\n\n"
+		exit 0
+	fi
 	printf "\n┌===========--------\n  Total points earned: $POINTS_TOTAL/$MAX_POINTS\n\n  Your current stage: $STAGE/$NUM_STAGES\n\n  $STAGE_DESC\n\n  Hints used this stage: $HINTS_USED\n  Points remaining this stage: $POINTS_STAGE\n└===========--------\n"
 }
 
 submit_fun () {
+	# check if the user has already finished the challenge
+	if [ $STAGE -gt $NUM_STAGES ]; then
+		printf "You have already completed the challenge. Thank you for participating!\n\n---===] Your final score is $POINTS_TOTAL! [===---\n\n"
+		exit 0
+	fi
 	printf "\nPlease enter your answer for stage $STAGE: "
 	read -r SUBMIT_RESPONSE
 	SUBMIT_LOWER=$(echo $SUBMIT_RESPONSE | tr '[:upper:]' '[:lower:]')
 	if [ $SUBMIT_LOWER = $STAGE_ANSWER ]; then
-		((POINTS_TOTAL+=$POINTS_STAGE))
-		((STAGE++))
-		((POINTS_STAGE=$NEXT_STAGE_POINTS))
-		printf "$SUCCESS_MSG\n"
+		# check if this is the final stage
+		if [ $STAGE -eq $NUM_STAGES ]; then
+			((POINTS_TOTAL+=$POINTS_STAGE))
+			((STAGE++))
+			printf "$SUCCESS_MSG"
+		else
+			((POINTS_TOTAL+=$POINTS_STAGE))
+			((STAGE++))
+			((POINTS_STAGE=$NEXT_STAGE_POINTS))
+			printf "$SUCCESS_MSG"
+		fi
 	else
 		printf "Incorrect answer. Please try again.\n"
 	fi
@@ -140,6 +163,11 @@ else
 fi
 
 # Save vars to file
-# format: MAX_POINTS;POINTS_TOTAL;POINTS_STAGE;STAGE;NUM_STAGES;HINTS_USED
-# TODO: Obfuscate the hell out of this file
-echo -n "$MAX_POINTS;$POINTS_TOTAL;$POINTS_STAGE;$STAGE;$NUM_STAGES;$HINTS_USED" > "$valuefile"
+# format: MAX_POINTS-POINTS_TOTAL-POINTS_STAGE-STAGE-NUM_STAGES-HINTS_USED
+
+# encrypt the data
+DATA=("$MAX_POINTS-$POINTS_TOTAL-$POINTS_STAGE-$STAGE-$NUM_STAGES-$HINTS_USED")
+ENC_DATA=$(echo -n "${DATA[0]}" | openssl aes-256-cbc -a -salt -pass pass:$PASSPHRASE -pbkdf2)
+
+# store the encrypted data
+echo -n $ENC_DATA > "$valuefile"
