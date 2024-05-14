@@ -11,6 +11,7 @@ if [ ! -f "$valuefile" ]; then
 
 # otherwise read the value from the file
 # format: MAX_POINTS;POINTS_TOTAL;POINTS_STAGE;STAGE;NUM_STAGES;HINTS_USED
+# TODO: Obfuscate the hell out of this file
 else
     value=$(<"$valuefile")
 	IFS=';' read -r -a values <<< "$value"
@@ -26,55 +27,95 @@ fi
 
 case $STAGE in
 	1)
-		STAGE_DESC="You have just been given an image of the device seised by the NSA. We have located an encrypted partition on the device. You must locate the script that is used to decrypt the partition. Once you have found the script, submit the hash of the file name (include the extension if available in the hash, all hashes are md5 for this challenge)."
+		STAGE_DESC="You have just been given an image of the device seized by the NSA. We have located an encrypted partition on the device. You must locate the script that is used to decrypt the partition. Once you have found the script, submit the hash of the file name (include the extension if available in the hash; all hashes are md5 for this challenge)."
 		# Hash of the file name "mnt_part_50179"
 		STAGE_ANSWER="b3e6ad45e549d4850bcaa03e1f926b6f"
 		NUM_HINTS=2
 		HINTS=("We believe that script is being run when the system boots, check for locations that can run files on boot." "Our forensic specialists have narrowed down some possible locations for the script, check /etc/init.d/ and the crontabs.")
 		SUCCESS_MSG="Congratulations! You have found the script used to decrypt the partition! You earned $POINTS_STAGE points for this stage. Proceed to the next stage."
+		NEXT_STAGE_POINTS=20000
 		;;
 	2)
 		STAGE_DESC=""
 		STAGE_ANSWER=""
+		NUM_HINTS=0
 		HINTS=()
+		SUCCESS_MSG=""
+		NEXT_STAGE_POINTS=20000
 		;;
 	3)
 		STAGE_DESC=""
 		STAGE_ANSWER=""
+		NUM_HINTS=0
 		HINTS=()
+		SUCCESS_MSG=""
+		NEXT_STAGE_POINTS=20000
 		;;
 	4)
 		STAGE_DESC=""
 		STAGE_ANSWER=""
+		NUM_HINTS=0
 		HINTS=()
+		SUCCESS_MSG=""
+		NEXT_STAGE_POINTS=20000
 		;;
 	5)
 		STAGE_DESC=""
 		STAGE_ANSWER=""
+		NUM_HINTS=0
 		HINTS=()
+		SUCCESS_MSG=""
 		;;
 esac
 
 # Functions
 
 help_fun () {
-	printf "\nWelcome to the NSA CLI!\nHere you can check your progress, request hints, and submit answers for each portion of the challenge.\n\nType commands in the form: nsa <command>\n\nCommands:\nhelp: Displays this menu.\nhint: Opens the menu for requesting a hint.\nstatus: Prints the current challenge progress.\n"
+	printf "\nWelcome to the NSA CLI!\nHere you can check your progress, request hints, and submit answers for each portion of the challenge.\n\nType commands in the form: nsa <command>\n\nCommands:\nhelp: Displays this menu.\nhint: Opens the menu for requesting a hint, and shows previous hints.\nstatus: Prints the current challenge progress and description.\nsubmit: Opens the menu for submitting the stage answer.\n"
 }
 
 hint_fun () {
+	# show previous hints
+	if [ $HINTS_USED -gt 0 ]; then
+		printf "\nPrevious hints for this stage:\n"
+		for i in $(seq 1 $HINTS_USED); do
+			printf "Hint $i: ${HINTS[$i-1]}\n"
+		done
+	fi
+	# check if there are any more hints left
+	if [ $HINTS_USED -ge $NUM_HINTS ]; then
+		printf "\nNo more hints available for this stage.\n"
+		return
+	fi
+	# if there are, give the user the next hint and deduct points
 	printf "\nWould you like to request a hint for the current stage? Doing so will deduct from the points earned this stage. (y/n)\n"
 	read -r HINT_RESPONSE
 	if [ $HINT_RESPONSE = "y" ]; then
 		((HINTS_USED++))
-		((POINTS_STAGE-=$(($POINTS_STAGE*20/100))))
+		((POINTS_STAGE-=4000))
 		printf "Hint requested! You have $POINTS_STAGE points remaining this stage.\n"
+		printf "Hint: ${HINTS[$HINTS_USED-1]}\n"
 	else
 		printf "Hint not requested.\n"
 	fi
 }
 
 status_fun () {
-	printf "\nYour current stage: $STAGE/$NUM_STAGES\nHints used this stage: $HINTS_USED\nTotal points earned: $POINTS_TOTAL\nPoints remaining this stage: $POINTS_STAGE\n"
+	printf "\n┌===========--------\n  Total points earned: $POINTS_TOTAL/$MAX_POINTS\n\n  Your current stage: $STAGE/$NUM_STAGES\n\n  $STAGE_DESC\n\n  Hints used this stage: $HINTS_USED\n  Points remaining this stage: $POINTS_STAGE\n└===========--------\n"
+}
+
+submit_fun () {
+	printf "\nPlease enter your answer for stage $STAGE: "
+	read -r SUBMIT_RESPONSE
+	SUBMIT_LOWER=$(echo $SUBMIT_RESPONSE | tr '[:upper:]' '[:lower:]')
+	if [ $SUBMIT_LOWER = $STAGE_ANSWER ]; then
+		((POINTS_TOTAL+=$POINTS_STAGE))
+		((STAGE++))
+		((POINTS_STAGE=$NEXT_STAGE_POINTS))
+		printf "$SUCCESS_MSG\n"
+	else
+		printf "Incorrect answer. Please try again.\n"
+	fi
 }
 
 # Process args and run functions
@@ -90,11 +131,15 @@ if [ $# = 1 ]; then
 		"status")
 			status_fun
 			;;
+		"submit")
+			submit_fun
+			;;
 	esac
 else
-	printf "Invalid Arguments: Try 'nsa help' for more info.\n"
+	printf "Invalid Arguments: Try 'nsa help' for more information.\n"
 fi
 
 # Save vars to file
 # format: MAX_POINTS;POINTS_TOTAL;POINTS_STAGE;STAGE;NUM_STAGES;HINTS_USED
-echo "$MAX_POINTS;$POINTS_TOTAL;$POINTS_STAGE;$STAGE;$NUM_STAGES;$HINTS_USED" > "$valuefile"
+# TODO: Obfuscate the hell out of this file
+echo -n "$MAX_POINTS;$POINTS_TOTAL;$POINTS_STAGE;$STAGE;$NUM_STAGES;$HINTS_USED" > "$valuefile"
