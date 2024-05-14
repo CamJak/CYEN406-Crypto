@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# Get Variables
+
+valuefile="./valuefile.dat"
+
+# if we don't have a file, it has been tampered with >:(
+if [ ! -f "$valuefile" ]; then
+    echo "You have tampered with the file! You must begin anew. Exiting..."
+	exit 1
+
+# otherwise read the value from the file
+# format: MAX_POINTS;POINTS_TOTAL;POINTS_STAGE;STAGE;NUM_STAGES;HINTS_USED
+else
+    value=$(<"$valuefile")
+	IFS=';' read -r -a values <<< "$value"
+	MAX_POINTS=${values[0]}
+	POINTS_TOTAL=${values[1]}
+	POINTS_STAGE=${values[2]}
+	STAGE=${values[3]}
+	NUM_STAGES=${values[4]}
+	HINTS_USED=${values[5]}
+fi
+
+# Set stage data
+
+case $STAGE in
+	1)
+		STAGE_DESC="You have just been given an image of the device seised by the NSA. We have located an encrypted partition on the device. You must locate the script that is used to decrypt the partition. Once you have found the script, submit the hash of the file name (include the extension if available in the hash, all hashes are md5 for this challenge)."
+		# Hash of the file name "mnt_part_50179"
+		STAGE_ANSWER="b3e6ad45e549d4850bcaa03e1f926b6f"
+		NUM_HINTS=2
+		HINTS=("We believe that script is being run when the system boots, check for locations that can run files on boot." "Our forensic specialists have narrowed down some possible locations for the script, check /etc/init.d/ and the crontabs.")
+		SUCCESS_MSG="Congratulations! You have found the script used to decrypt the partition! You earned $POINTS_STAGE points for this stage. Proceed to the next stage."
+		;;
+	2)
+		STAGE_DESC=""
+		STAGE_ANSWER=""
+		HINTS=()
+		;;
+	3)
+		STAGE_DESC=""
+		STAGE_ANSWER=""
+		HINTS=()
+		;;
+	4)
+		STAGE_DESC=""
+		STAGE_ANSWER=""
+		HINTS=()
+		;;
+	5)
+		STAGE_DESC=""
+		STAGE_ANSWER=""
+		HINTS=()
+		;;
+esac
+
+# Functions
+
+help_fun () {
+	printf "\nWelcome to the NSA CLI!\nHere you can check your progress, request hints, and submit answers for each portion of the challenge.\n\nType commands in the form: nsa <command>\n\nCommands:\nhelp: Displays this menu.\nhint: Opens the menu for requesting a hint.\nstatus: Prints the current challenge progress.\n"
+}
+
+hint_fun () {
+	printf "\nWould you like to request a hint for the current stage? Doing so will deduct from the points earned this stage. (y/n)\n"
+	read -r HINT_RESPONSE
+	if [ $HINT_RESPONSE = "y" ]; then
+		((HINTS_USED++))
+		((POINTS_STAGE-=$(($POINTS_STAGE*20/100))))
+		printf "Hint requested! You have $POINTS_STAGE points remaining this stage.\n"
+	else
+		printf "Hint not requested.\n"
+	fi
+}
+
+status_fun () {
+	printf "\nYour current stage: $STAGE/$NUM_STAGES\nHints used this stage: $HINTS_USED\nTotal points earned: $POINTS_TOTAL\nPoints remaining this stage: $POINTS_STAGE\n"
+}
+
+# Process args and run functions
+
+if [ $# = 1 ]; then
+	case $1 in
+		"help")
+			help_fun
+			;;
+		"hint")
+			hint_fun
+			;;
+		"status")
+			status_fun
+			;;
+	esac
+else
+	printf "Invalid Arguments: Try 'nsa help' for more info.\n"
+fi
+
+# Save vars to file
+# format: MAX_POINTS;POINTS_TOTAL;POINTS_STAGE;STAGE;NUM_STAGES;HINTS_USED
+echo "$MAX_POINTS;$POINTS_TOTAL;$POINTS_STAGE;$STAGE;$NUM_STAGES;$HINTS_USED" > "$valuefile"
