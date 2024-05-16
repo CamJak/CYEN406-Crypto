@@ -3,7 +3,7 @@
 # Get Variables
 
 # NEEDS ABSOLUTE PATH
-valuefile="./valuefile.dat"
+valuefile="/var/data/valuefile.dat"
 PASSPHRASE="SuperDuperSecurePassphrase901"
 
 # if we don't have a file, it has been tampered with >:(
@@ -58,10 +58,11 @@ case $STAGE in
 		NEXT_STAGE_POINTS=20000
 		;;
 	4)
-		STAGE_DESC="Now that we have access to the partition, we need to mount it and search for evidence..."
-		STAGE_ANSWER=""
-		NUM_HINTS=0
-		HINTS=()
+		STAGE_DESC="Now that we have access to the partition, we need to mount it and search for evidence. We know that our suspect is planning an attack but we are unsure of the date. Try to search the drive for hidden evidence that can reveal their plans and the date of their planned attack (steghide is your friend). Submit your answer as a date in the form MM-DD-YYYY."
+		# The date of the operation
+		STAGE_ANSWER="04-15-2024"
+		NUM_HINTS=3
+		HINTS=("There are many images on the partition, what kind of tool can we use to search for hidden data in images?" "The tool steghide is commonly used to hide data in images, try using this tool to extract the hidden data." "The hidden data may contain the date of the planned attack, make sure you are looking for the correct information.")
 		SUCCESS_MSG="Congratulations! You have completed the challenge! You earned $POINTS_STAGE points for this stage. Thank you for participating!\n\n---===] Your final score is $POINTS_TOTAL! [===---\n\n"
 		;;
 esac
