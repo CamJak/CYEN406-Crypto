@@ -1,17 +1,16 @@
 #!/bin/sh
 
 # Courtesy of NSA-Codebreaker
-# remove labels later
 
-SEC_DRIVE=$1      <---  /dev/sda2
-SEC_MOUNT=$2      <---  /private
-ENC_PARTITION=$3  <---  /opt/part.enc
-ENC_MOUNT=$4      <---  /agent
+SEC_DRIVE=$1
+SEC_MOUNT=$2
+ENC_PARTITION=$3
+ENC_MOUNT=$4
 
 [ ! -e $ENC_PARTITION ] && { echo "encrypted partition not found"; exit 1; }
 
 mkdir -p $SEC_MOUNT
-mount $SEC_DRIVE $SEC_MOUNT
+echo $SEC_DRIVE $SEC_MOUNT
 NAME=`hostname`
 ID=`cat /private/id.txt`
 
