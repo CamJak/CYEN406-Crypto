@@ -4,6 +4,7 @@
 
 # NEEDS ABSOLUTE PATH
 valuefile="/var/data/valuefile.dat"
+# valuefile="./valuefile.dat"
 PASSPHRASE="SuperDuperSecurePassphrase901"
 
 # if we don't have a file, it has been tampered with >:(
@@ -45,7 +46,7 @@ case $STAGE in
 		NUM_HINTS=4
 		HINTS=("The part we are trying to exploit is the method of decryption, make sure you are looking at the correct line(s) in the script." "LUKS is using a passphrase to encrypt the partition, think of attacks that can be used to crack passphrases." "What is the keyspace for the passphrase, are there clues that can help us determine some or all of the passphrase?" "We have determined that the file contains some of the passphrase but not all, what type of attack can take advantage of a partial passphrase/limited keyspace?")
 		SUCCESS_MSG="That's correct! Because of the small number of possible passphrases and lack of security measures, a dictionary attack should be able to quickly crack the encryption. You earned $POINTS_STAGE points for this stage. Proceed to the next stage.\n"
-		NEXT_STAGE_POINTS=30000
+		NEXT_STAGE_POINTS=35000
 		MAX_ATTEMPTS=3
 		;;
 	3)
