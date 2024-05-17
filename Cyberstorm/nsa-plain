@@ -2,7 +2,8 @@
 
 # Get Variables
 
-valuefile="./valuefile.dat"
+# NEEDS ABSOLUTE PATH
+valuefile="/var/data/valuefile.dat"
 PASSPHRASE="SuperDuperSecurePassphrase901"
 
 # if we don't have a file, it has been tampered with >:(
@@ -32,8 +33,8 @@ case $STAGE in
 		STAGE_DESC="You have just been given an image of the device seized by the NSA. We have located an encrypted partition on the device. You must locate the script that is used to decrypt the partition. Once you have found the script, submit the hash of the file name (include the extension if available in the hash; all hashes are md5 for this challenge)."
 		# Hash of the file name "mnt_part_50179"
 		STAGE_ANSWER="b3e6ad45e549d4850bcaa03e1f926b6f"
-		NUM_HINTS=2
-		HINTS=("We believe that script is being run when the system boots, check for locations that can run files on boot." "Our forensic specialists have narrowed down some possible locations for the script, check /etc/init.d/ and the crontabs.")
+		NUM_HINTS=4
+		HINTS=("There appears to be some information regarding the decryption appearing on boot..." "We are seeing printout from the script on boot, try looking in locations that can run on boot." "Our forensic specialists have narrowed down some possible locations for the script, check /etc/init.d/ and the crontabs." "The script we are looking for could be nested within another script. Try finding the name of the script that is actually doing the decryption.")
 		SUCCESS_MSG="Congratulations! You have found the script used to decrypt the partition! You earned $POINTS_STAGE points for this stage. Proceed to the next stage.\n"
 		NEXT_STAGE_POINTS=10000
 		;;
@@ -41,33 +42,27 @@ case $STAGE in
 		STAGE_DESC="You have now located the script that is used to mount and decrypt the partition. To gain access to the hidden files, we need you to reverse engineer the script and determine how the script is doing the decryption. To complete this stage, you must identify the best method to attack the encryption used in the script. Once you have identified the method, submit the answer in the form of '______ attack'. (You will get only 3 attempts to answer this stage.)"
 		# The answer is "dictionary attack"
 		STAGE_ANSWER="dictionary attack"
-		NUM_HINTS=0
-		HINTS=()
+		NUM_HINTS=4
+		HINTS=("The part we are trying to exploit is the method of decryption, make sure you are looking at the correct line(s) in the script." "LUKS is using a passphrase to encrypt the partition, think of attacks that can be used to crack passphrases." "What is the keyspace for the passphrase, are there clues that can help us determine some or all of the passphrase?" "We have determined that the file contains some of the passphrase but not all, what type of attack can take advantage of a partial passphrase/limited keyspace?")
 		SUCCESS_MSG="That's correct! Because of the small number of possible passphrases and lack of security measures, a dictionary attack should be able to quickly crack the encryption. You earned $POINTS_STAGE points for this stage. Proceed to the next stage.\n"
-		NEXT_STAGE_POINTS=20000
+		NEXT_STAGE_POINTS=30000
 		MAX_ATTEMPTS=3
 		;;
 	3)
-		STAGE_DESC=""
-		STAGE_ANSWER=""
-		NUM_HINTS=0
-		HINTS=()
-		SUCCESS_MSG=""
+		STAGE_DESC="We have now identified the attack to use against the encryption, but now its time to actually execute it! We need to take advantage of the limited keyspace and use a tool or script to find the correct passphrase to decrypt the partition. To complete this stage, you must submit the passphrase used to encrypt/decrypt the patition (make sure you submit the passphrase actually used by LUKS)."
+		# This is the passphrase used to encrypt the partition (the sha1 hash of "tastymouse428")
+		STAGE_ANSWER="15a2e866334ff53aed3c7532b9f7f42e96c96243"
+		NUM_HINTS=6
+		HINTS=("Start by identifying the keyspace for the passphrase, what are the possible characters and length of the passphrase? You will need this to build your dictionary." "Make sure you combine our known portion of the passphrase with the unknown characters, how could we reduce keyspace to make this faster?" "You should have the dictionary created now, what tool can we use to perform the dictionary attack? A personal script can work but there may be tools that can make it easier" "Our experts recommend the tool hashcat for this attack, it may even have a mode for LUKS specifically." "Make sure you are using the correct hashing for the passphrase, hashcat should cover this for you but a personal script will need a dictionary of hashed phrases." "Make sure the answer you submit is a hash.")
+		SUCCESS_MSG="You did it! We have successfully identified the passphrase and can now decrypt the partition. You earned $POINTS_STAGE points for this stage. Proceed to the next stage.\n"
 		NEXT_STAGE_POINTS=20000
 		;;
 	4)
-		STAGE_DESC=""
-		STAGE_ANSWER=""
-		NUM_HINTS=0
-		HINTS=()
-		SUCCESS_MSG=""
-		NEXT_STAGE_POINTS=20000
-		;;
-	5)
-		STAGE_DESC=""
-		STAGE_ANSWER=""
-		NUM_HINTS=0
-		HINTS=()
+		STAGE_DESC="Now that we have access to the partition, we need to mount it and search for evidence. We know that our suspect is planning an attack but we are unsure of the date. Try to search the drive for hidden evidence that can reveal their plans and the date of their planned attack (steghide is your friend). Submit your answer as a date in the form MM-DD-YYYY."
+		# The date of the operation
+		STAGE_ANSWER="04-15-2024"
+		NUM_HINTS=3
+		HINTS=("There are many images on the partition, what kind of tool can we use to search for hidden data in images?" "The tool steghide is commonly used to hide data in images, try using this tool to extract the hidden data." "The hidden data may contain the date of the planned attack, make sure you are looking for the correct information.")
 		SUCCESS_MSG="Congratulations! You have completed the challenge! You earned $POINTS_STAGE points for this stage. Thank you for participating!\n\n---===] Your final score is $POINTS_TOTAL! [===---\n\n"
 		;;
 esac
