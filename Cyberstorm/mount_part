@@ -1,0 +1,6 @@
+#!/sbin/openrc-run
+
+start() {
+    echo "Mounting encrypted drive ..."
+    /opt/mnt_part_50179 /dev/sda2 /private /opt/part.enc /agent
+}
