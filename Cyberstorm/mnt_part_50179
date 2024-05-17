@@ -12,7 +12,7 @@ ENC_MOUNT=$4
 mkdir -p $SEC_MOUNT
 echo $SEC_DRIVE $SEC_MOUNT
 NAME=`hostname`
-ID=`cat /private/id.txt`
+ID=`cat /etc/id.txt`
 
 DATA="${NAME}${ID:0:3}"
 echo "cryptsetup: opening $ENC_PARTITION"
