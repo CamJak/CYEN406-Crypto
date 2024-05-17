@@ -67,7 +67,7 @@ case $STAGE in
 		STAGE_ANSWER="04-15-2024"
 		NUM_HINTS=3
 		HINTS=("There are many images on the partition, what kind of tool can we use to search for hidden data in images?" "The tool steghide is commonly used to hide data in images, try using this tool to extract the hidden data." "The hidden data may contain the date of the planned attack, make sure you are looking for the correct information.")
-		SUCCESS_MSG="Congratulations! You have completed the challenge! Check 'nsa status' to view your final score! Thank you for participating!\n\n---===] Your final score is $POINTS_TOTAL! [===---\n\n"
+		SUCCESS_MSG="Congratulations! You have completed the challenge! Check 'nsa status' to view your final score! Thank you for participating!\n\n"
 		NEXT_STAGE_POINTS=0
 		;;
 esac
