@@ -3,8 +3,8 @@
 # Get Variables
 
 # NEEDS ABSOLUTE PATH
-valuefile="/var/data/valuefile.dat"
-# valuefile="./valuefile.dat"
+# valuefile="/var/data/valuefile.dat"
+valuefile="./valuefile.dat"
 PASSPHRASE="SuperDuperSecurePassphrase901"
 
 # if we don't have a file, it has been tampered with >:(
@@ -29,6 +29,8 @@ fi
 
 # Set stage data
 
+HINT_DEDUCTION=2500
+
 case $STAGE in
 	1)
 		STAGE_DESC="You have just been given an image of the device seized by the NSA. We have located an encrypted partition on the device. You must locate the script that is used to decrypt the partition. Once you have found the script, submit the hash of the file name (include the extension if available in the hash; all hashes are md5 for this challenge)."
@@ -48,6 +50,7 @@ case $STAGE in
 		SUCCESS_MSG="That's correct! Because of the small number of possible passphrases and lack of security measures, a dictionary attack should be able to quickly crack the encryption. You earned $POINTS_STAGE points for this stage. Proceed to the next stage.\n"
 		NEXT_STAGE_POINTS=35000
 		MAX_ATTEMPTS=3
+		HINT_DEDUCTION=1000
 		;;
 	3)
 		STAGE_DESC="We have now identified the attack to use against the encryption, but now its time to actually execute it! We need to take advantage of the limited keyspace and use a tool or script to find the correct passphrase to decrypt the partition. To complete this stage, you must submit the passphrase used to encrypt/decrypt the patition (make sure you submit the passphrase actually used by LUKS)."
@@ -105,7 +108,7 @@ hint_fun () {
 	read -r HINT_RESPONSE
 	if [ $HINT_RESPONSE = "y" ]; then
 		((HINTS_USED++))
-		((POINTS_STAGE-=4000))
+		((POINTS_STAGE-=$HINT_DEDUCTION))
 		printf "Hint requested! You have $POINTS_STAGE points remaining this stage.\n"
 		printf "Hint: ${HINTS[$HINTS_USED-1]}\n"
 	else
