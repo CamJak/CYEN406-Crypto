@@ -3,8 +3,8 @@
 # Get Variables
 
 # NEEDS ABSOLUTE PATH
-# valuefile="/var/data/valuefile.dat"
-valuefile="./valuefile.dat"
+valuefile="/var/data/valuefile.dat"
+# valuefile="./valuefile.dat"
 PASSPHRASE="SuperDuperSecurePassphrase901"
 
 # if we don't have a file, it has been tampered with >:(
